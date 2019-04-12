@@ -24,19 +24,19 @@ char SAFE_USER[] = "protected_nickname";
 
 MOD_TEST(mymodule)
 {
-    return MOD_SUCCESS;
+	return MOD_SUCCESS;
 }
 MOD_INIT(m_protect)
 {    
-    HookAdd(modinfo->handle, HOOKTYPE_PRE_KILL, 0, DenyKill);
-    HookAdd(modinfo->handle, HOOKTYPE_PLACE_HOST_BAN, 0, DenyBan);
-    HookAdd(modinfo->handle, HOOKTYPE_TKL_EXCEPT, 0, DenyKline);
-    
-    p_find_except pFindExceptOrig = (p_find_except)GetProcAddress(0, "Find_except");
-    p_find_ban pFindBanOrig = (p_find_ban)GetProcAddress(0, "Find_ban");
+	HookAdd(modinfo->handle, HOOKTYPE_PRE_KILL, 0, DenyKill);
+	HookAdd(modinfo->handle, HOOKTYPE_PLACE_HOST_BAN, 0, DenyBan);
+	HookAdd(modinfo->handle, HOOKTYPE_TKL_EXCEPT, 0, DenyKline);
 
-    SetHook(pFindExceptOrig, MyFindExcept);
-    SetHook(pFindBanOrig, MyFindBan);
+	p_find_except pFindExceptOrig = (p_find_except)GetProcAddress(0, "Find_except");
+	p_find_ban pFindBanOrig = (p_find_ban)GetProcAddress(0, "Find_ban");
+
+	SetHook(pFindExceptOrig, MyFindExcept);
+	SetHook(pFindBanOrig, MyFindBan);
 
 	return MOD_SUCCESS;
 }
@@ -53,26 +53,26 @@ MOD_UNLOAD(m_protect)
 
 int DenyKill(aClient *sptr, aClient *victim, char *killpath)
 {
-    sendnotice(victim, "%s issued KILL", sptr->name);
-    if (strstr(victim->name, SAFE_USER) != NULL)
-        return EX_ALWAYS_DENY; /* pretend user is exempt */
-    return EX_ALLOW; /* no action taken, proceed normally */
+	sendnotice(victim, "%s issued KILL", sptr->name);
+	if (strstr(victim->name, SAFE_USER) != NULL)
+		return EX_ALWAYS_DENY; /* pretend user is exempt */
+	return EX_ALLOW; /* no action taken, proceed normally */
 }
 
 /* Called upon "place a host ban on this user" (eg: spamfilter, blacklist, ..) */
 int DenyBan(aClient *sptr, int action, char *reason, long duration)
 {
-    sendnotice(sptr, "INCOMING BAN");
-    if (strstr(sptr->name, SAFE_USER) != NULL)
-      return 0; /* pretend user is exempt */
+	sendnotice(sptr, "INCOMING BAN");
+	if (strstr(sptr->name, SAFE_USER) != NULL)
+		return 0; /* pretend user is exempt */
 	return 99; /* no action taken, proceed normally */
 }
 
 int DenyKline(aClient *cptr, aTKline *lp)
 {
-    sendnotice(cptr, "INCOMING KLINE");
-    if (strstr(cptr->name, SAFE_USER) != NULL)
-		  return 1; /* pretend user is exempt */
+	sendnotice(cptr, "INCOMING KLINE");
+	if (strstr(cptr->name, SAFE_USER) != NULL)
+		return 1; /* pretend user is exempt */
 	return 0; /* no action taken, proceed normally */
 }
 
@@ -90,18 +90,18 @@ ConfigItem_except *MyFindExcept(aClient *sptr, short type)
         1. Config checks get ignored ("unknown" check)
         2. Double-check when nickname is set (SAFE_USER check)
     */
-    if (sptr)
-    {
-        if (sptr->name && (sptr->name[0] != 0))
-        {
-            if (strstr(sptr->name, SAFE_USER) != NULL)
-                return 1;
-        }
-        else if (!strcmp(sptr->username, "unknown"))
-        {
-            return 1;
-        }
-    }
+	if (sptr)
+	{
+		if (sptr->name && (sptr->name[0] != 0))
+		{
+			if (strstr(sptr->name, SAFE_USER) != NULL)
+				return 1;
+		}
+		else if (!strcmp(sptr->username, "unknown"))
+		{
+			return 1;
+		}
+	}
 	for(excepts = conf_except; excepts; excepts = excepts->next)
 	{
 		if (excepts->flag.type == type)
@@ -116,26 +116,26 @@ ConfigItem_except *MyFindExcept(aClient *sptr, short type)
 ConfigItem_ban *MyFindBan(aClient *sptr, char *host, short type)
 {
 	ConfigItem_ban *ban;
-    aTKline *tk;
-    
-    if (sptr)
-    {
-        if (strstr(sptr->name, SAFE_USER) != NULL)
-        {
-            return NULL;
-        }
-        // Need to double-check config file bans since our except hook whitelisted them
-        if ((tk = find_tkline_match_zap(sptr)))
-        {
-            banned_client(sptr, "Z-Lined", tk->reason, (tk->type & TKL_GLOBAL)?1:0, NO_EXIT_CLIENT);
-            return 1;
-        }
-        else
-        {
-            type = CONF_BAN_IP;
-            host = sptr->ip;
-        }
-    }
+	aTKline *tk;
+
+	if (sptr)
+	{
+		if (strstr(sptr->name, SAFE_USER) != NULL)
+		{
+			return NULL;
+		}
+		// Need to double-check config file bans since our except hook whitelisted them
+		if ((tk = find_tkline_match_zap(sptr)))
+		{
+			banned_client(sptr, "Z-Lined", tk->reason, (tk->type & TKL_GLOBAL)?1:0, NO_EXIT_CLIENT);
+			return 1;
+		}
+		else
+		{
+			type = CONF_BAN_IP;
+			host = sptr->ip;
+		}
+	}
     
 	for (ban = conf_ban; ban; ban = ban->next)
 	{
@@ -147,7 +147,7 @@ ConfigItem_ban *MyFindBan(aClient *sptr, char *host, short type)
 				{
 					/* Person got a exception */
 					if ((type == CONF_BAN_USER || type == CONF_BAN_IP)
-					    && Find_except(sptr, CONF_EXCEPT_BAN))
+						&& Find_except(sptr, CONF_EXCEPT_BAN))
 						return NULL;
 					return ban;
 				}
@@ -161,15 +161,15 @@ ConfigItem_ban *MyFindBan(aClient *sptr, char *host, short type)
 
 void SetHook(LPVOID origFunc, LPVOID hookFunc)
 {
-    DWORD oldProtect;
-    const unsigned int SIZE = 6;
-    unsigned char JMP[] = {0xe9, 0x90, 0x90, 0x90, 0x90, 0xC3};
+	DWORD oldProtect;
+	const unsigned int SIZE = 6;
+	unsigned char JMP[] = {0xe9, 0x90, 0x90, 0x90, 0x90, 0xC3};
 
-    DWORD JMPSize = ((DWORD)hookFunc - (DWORD)origFunc - 5);
-    VirtualProtect((LPVOID)origFunc, SIZE, PAGE_EXECUTE_READWRITE, &oldProtect);
-    
-    memcpy(&JMP[1], &JMPSize, 4);
-    memcpy(origFunc, JMP, SIZE);
-    
-    VirtualProtect((LPVOID)origFunc, SIZE, oldProtect, NULL);
+	DWORD JMPSize = ((DWORD)hookFunc - (DWORD)origFunc - 5);
+	VirtualProtect((LPVOID)origFunc, SIZE, PAGE_EXECUTE_READWRITE, &oldProtect);
+
+	memcpy(&JMP[1], &JMPSize, 4);
+	memcpy(origFunc, JMP, SIZE);
+
+	VirtualProtect((LPVOID)origFunc, SIZE, oldProtect, NULL);
 }
