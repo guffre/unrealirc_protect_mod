@@ -1,10 +1,5 @@
 #include "unrealircd.h"
 
-#ifdef Find_except
-#undefine Find_except
-#endif
-
-
 // The user will see this information if they execute a '/module -all' command
 ModuleHeader MOD_HEADER(m_protect) = {
 	"m_protect",
